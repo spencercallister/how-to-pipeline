@@ -1,0 +1,224 @@
+---
+title: "Use a Secret Manager!"
+author: "Spencer Callister"
+date: "2024-11-20"
+categories: [news, code, analysis]
+image: "image.png"
+---
+
+### What are Secrets?
+
+Secrets usually refer to credentials that you do not want to expose outside of yourself or your organization.
+
+Some examples of secrets are:
+- API keys
+- Database credentials
+- Encryption keys
+- Third party tokens
+- Website passwords
+
+When these are not stored properly, they can be leaked in data breaches that are caused intentionally or unintentionally. This gives people with bad intentions the means to exploit your data or even worse, millions of people's data.
+
+Last week, CPO Magazine reported that [a hacker obtained source code](https://www.cpomagazine.com/cyber-security/nokia-security-breach-leaks-source-code-login-credentials-keys-and-more-hacker-sells-data-to-special-buyers/) from a repository belonging to a third party company developing internal tools for Nokia. Included in the leak are SSH keys and hardcoded credentials, which the hacker is auctioning off. 
+
+The third party should have avoided hard coding the credentials and the SSH key never should have been pushed to the repository. To help you avoid making the same mistake, I will walk you through using using two secret managers.
+
+### Using a Secret Manager {.tabset}
+ 
+In your project directory, create a file called "secret.json" and paste the data below into it:
+```
+{
+    "Host": "sample_host",
+    "Port": 5432,
+    "Database": "sample_database",
+    "Username": "sample_user",
+    "Password": "sample_password"
+}
+```
+
+Now create a new python file where the code using the SDK will go.
+
+#### Google Cloud
+
+Since I am a big fan of Google Cloud, I will show you how to use the Google Cloud Secret Manager.
+
+If you do not already have a project you can use, you need to [create one](https://developers.google.com/workspace/guides/create-project) before moving on. You will also need to [enable billing](https://cloud.google.com/billing/docs/how-to/modify-project#required-permissions-enable) and [enable the secret manager API](https://console.cloud.google.com/marketplace/product/google/secretmanager.googleapis.com?returnUrl=/security/secret-manager?referrer%3Dsearch%26inv%3D1%26invt%3DAbjhJg%26project%3Dscenic-index-390500&inv=1&invt=AbjhJg&project=scenic-index-390500).
+
+Next you will need to authenticate somehow. I strongly recommend using the gcloud CLI because of how easy it is to use in application development. If you haven't done so already, [install the gcloud CLI](https://cloud.google.com/sdk/docs/install).
+
+Initialize the CLI with:
+
+```
+gcloud init
+```
+
+Authenticate using:
+
+```
+gcloud auth application-default login
+```
+
+Now that you are authenticated, you can create the secret.
+
+Install the Secret Manager library:
+
+```
+pip install google-cloud-secret-manager
+```
+
+Import the module and initialize the Secret Manager Service Client:
+
+```
+from google.cloud import secretmanager     # Import the Secret Manager client library.
+import json
+
+client = secretmanager.SecretManagerServiceClient()     # Create the Secret Manager client.
+```
+
+Create the Secret:
+
+```
+project_id = "your-project-id"     # GCP project in which to store secrets in Secret Manager.
+secret_id = "tutorial-sample"     # ID of the secret to create.
+
+parent = f"projects/{project_id}"     # Build the parent name from the project.
+
+# Create the parent secret.
+secret = client.create_secret(
+    request={
+        "parent": parent,
+        "secret_id": secret_id,
+        "secret": {"replication": {"automatic": {}}},
+    }
+)
+
+# Add the secret version.
+version = client.add_secret_version(
+    request={
+        "parent": secret.name, 
+        "payload": {"data": open("replace_with_path/secret.json").read().encode("UTF-8")},     # Convert the json to string and encode
+    }
+)
+
+print(f"Created secret version: {version.name}")
+```
+
+Now if you want to access the secret you just created in an application, you can use:
+
+```
+secret_path = f"projects/{project_id}/secrets/{secret_id}/versions/1"
+
+response = client.access_secret_version(request={"name": secret_path})     # Access the secret version.
+tutorial_secret = json.loads(response.payload.data.decode("utf-8"))     # Decode and convert from string to Dict
+```
+
+For further questions on Google Cloud's secret manager, review their [documentation](https://cloud.google.com/secret-manager/docs/reference/libraries).
+
+#### Infisical
+
+Create an [Infisical account](https://app.infisical.com/signup)
+
+When you are signed up and logged in, click on the green "Add New Project" button on the top right.
+
+Enter your project name and you can leave the rest empty, then click the green "Create Project" button.
+
+Now select "Access Control" from the left nav-bar and click on the "Machine Identities" tab.
+
+Click the green "Add Identity" button, then the "Create a new identity" button, and then click "Machine Identities" again.
+
+Enter a name and select "Admin" for the role.
+
+Click the green "Create" button.
+
+Then click the green "Create Client Secret" button.
+
+Enter a name and if wanted, set the max number of uses (0 is infinite).
+
+Copy the secret and stash it somewhere safe for now.
+
+Add the indentity to the project.
+
+Now you are ready to use the credentials to authenticate and create a secret in Python.
+
+Open a new terminal and set your environment variables. The Client ID can be found in the Authentication section of the identity and get the secret from where you stashed it and remove it from there.
+
+On Linux:
+
+```
+export CLIENT_ID=your_client_id
+export CLIENT_SECRET=your_client_secret
+```
+
+On Windows:
+
+```
+set CLIENT_ID=your_client_id
+set CLIENT_SECRET=your_client_secret
+```
+
+Since the environment variables are set in this specific terminal, you will always run the python script using:
+
+```
+python your_file_name.py
+```
+
+Install the Infisical SDK for Python:
+
+```
+pip install infisicalsdk
+```
+
+Import the module and initialize the client:
+
+```
+import json
+import os
+from infisical_sdk import InfisicalSDKClient
+
+client = InfisicalSDKClient(host="https://app.infisical.com")     # Initialize the client
+client.auth.universal_auth.login(client_id = os.environ.get("CLIENT_ID"), client_secret = os.environ.get("CLIENT_SECRET"))
+```
+
+Create the secret:
+
+```
+# Use the SDK to interact with Infisical.
+new_secret = client.secrets.create_secret_by_name(
+    secret_name = "tutorial-sample",
+    project_id = your_project_id,
+    secret_path = "/",
+    environment_slug = "dev",
+    secret_value = open("replace_with_path/secret.json").read(),
+    secret_comment = "Optional comment",
+    skip_multiline_encoding = False,
+    secret_reminder_repeat_days = 30,     # Optional
+    secret_reminder_note = "Remember to update this secret"     # Optional
+)
+```
+
+Now if you want to access the secret you just created in an application, you can use:
+
+```
+# Get the secret
+secret = client.secrets.get_secret_by_name(
+    secret_name = "tutorial-sample",
+    project_id = your_project_id,
+    environment_slug = "dev",
+    secret_path = "/",
+    expand_secret_references = True,
+    include_imports = True,
+    version = None  # Optional
+)
+
+secret_value = json.loads(secret.secret.secret_value)     # Convert from string to json
+```
+
+For further questions on Infisical's SDK, read their [documentation](https://infisical.com/docs/documentation/getting-started/introduction).
+
+### Wrapping Up
+
+With the secret now safely stored in Google Cloud or Infisical, you should delete the secret.json file I had you make earlier so they don't get exposed from your directory by accident.
+
+With your new knowledge unlocked, not only do you now have a single space to keep all your credentials for APIs, databases, etc. but you can access them from your programs. This is excellent cyber security in action and keeps your sensitive data secure. There are a lot of secret managers out there with their own unique features and advantages, so don't be afraid to explore new products.
+
+Thank you for reading my article and good luck in all your programming ventures!

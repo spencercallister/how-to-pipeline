@@ -11,6 +11,7 @@ image: "image.png"
 Secrets usually refer to credentials that you do not want to expose outside of yourself or your organization.
 
 Some examples of secrets are:
+
 - API keys
 - Database credentials
 - Encryption keys

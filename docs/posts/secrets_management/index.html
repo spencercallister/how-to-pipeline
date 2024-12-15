@@ -159,7 +159,14 @@ ul.task-list li input[type="checkbox"] {
 <section id="what-are-secrets" class="level3">
 <h3 class="anchored" data-anchor-id="what-are-secrets">What are Secrets?</h3>
 <p>Secrets usually refer to credentials that you do not want to expose outside of yourself or your organization.</p>
-<p>Some examples of secrets are: - API keys - Database credentials - Encryption keys - Third party tokens - Website passwords</p>
+<p>Some examples of secrets are:</p>
+<ul>
+<li>API keys</li>
+<li>Database credentials</li>
+<li>Encryption keys</li>
+<li>Third party tokens</li>
+<li>Website passwords</li>
+</ul>
 <p>When these are not stored properly, they can be leaked in data breaches that are caused intentionally or unintentionally. This gives people with bad intentions the means to exploit your data or even worse, millions of people’s data.</p>
 <p>Last week, CPO Magazine reported that <a href="https://www.cpomagazine.com/cyber-security/nokia-security-breach-leaks-source-code-login-credentials-keys-and-more-hacker-sells-data-to-special-buyers/">a hacker obtained source code</a> from a repository belonging to a third party company developing internal tools for Nokia. Included in the leak are SSH keys and hardcoded credentials, which the hacker is auctioning off.</p>
 <p>The third party should have avoided hard coding the credentials and the SSH key never should have been pushed to the repository. To help you avoid making the same mistake, I will walk you through using using two secret managers.</p>

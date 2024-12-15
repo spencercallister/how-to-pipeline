@@ -12,11 +12,12 @@ Secrets usually refer to credentials that you do not want to expose outside of y
 
 Some examples of secrets are:
 
-- API keys
-- Database credentials
-- Encryption keys
-- Third party tokens
-- Website passwords
+* API keys
+* Database credentials
+* Encryption keys
+* Third party tokens
+* Website passwords
+
 
 When these are not stored properly, they can be leaked in data breaches that are caused intentionally or unintentionally. This gives people with bad intentions the means to exploit your data or even worse, millions of people's data.
 

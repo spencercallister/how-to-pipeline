@@ -16,5 +16,8 @@
   },
   "posts/places_tutorial/index.qmd": {
     "index.html": "bccd866c"
+  },
+  "posts/spatial_joins/index.qmd": {
+    "index.html": "c8f45f35"
   }
 }

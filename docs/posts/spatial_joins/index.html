@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Spencer Callister">
+<meta name="dcterms.date" content="2024-12-06">
 
-<title>how-to-pipeline</title>
+<title>Geospatial Joins in Apache Sedona – how-to-pipeline</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +25,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,77 +68,19 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">how-to-pipeline</span>
     </a>
   </div>
@@ -149,7 +91,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
@@ -172,155 +114,118 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">how-to-pipeline</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">Geospatial Joins in Apache Sedona</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">news</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
   </div>
     
   
-  <div class="quarto-title-meta column-page-left">
+  <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Spencer Callister </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 6, 2024</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(3)</span></div><div class="category" data-category="analysis">analysis <span class="quarto-category-count">(2)</span></div><div class="category" data-category="code">code <span class="quarto-category-count">(2)</span></div><div class="category" data-category="news">news <span class="quarto-category-count">(3)</span></div></div></div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
 
+<p>Pyspark combined with Apache Sedona is a very powerful tool that not enough data scientists and data engineers are using, especially when it comes to spatial data. This walkthrough will tell you the necessities for getting started in using spatial joins with Apache Sedona in Databricks.</p>
+<p>First, sign up for a <a href="https://docs.databricks.com/en/getting-started/community-edition.html"><strong>Community</strong> Edition Databricks account</a> When you are logged in create a new notebook and start a cluster with a 12.2 LTS (Scala 2.12, Spark 3.3.2) runtime, then attach it to the notebook.</p>
+<p>Click on “Compute” on the left nav-bar and click on your cluster. Click on the “Libraries” tab and click “Install new”.</p>
+<p>Select Maven and enter the following in the coordinates section:</p>
+<pre><code>org.apache.sedona:sedona-spark-shaded-3.0_2.12:1.6.0</code></pre>
+<p>Click “Install”.</p>
+<p>Click the install new button again and select “Maven”.</p>
+<p>Enter the following into the coordinates section:</p>
+<pre><code>org.datasyslab:geotools-wrapper:1.6.0-28.2</code></pre>
+<p>Go back to your notebook and you will use the following line to install the Apache Sedona library for Python:</p>
+<pre><code>%pip install apache-sedona</code></pre>
+<p>Then import the library and initialize the Sedona context:</p>
+<pre><code>from pyspark.sql.types import StructType, StructField, FloatType, TimestampType, ShortType, DoubleType, DateType, StringType, LongType
+from pyspark.sql import functions as F
+from sedona.spark import *
+
+config = SedonaContext.builder() .\
+    config('spark.jars.packages',
+           'org.apache.sedona:sedona-spark-shaded-3.0_2.12:1.6.0,'
+           'org.datasyslab:geotools-wrapper:1.6.0-28.2'). \
+    getOrCreate()
+
+sedona = SedonaContext.create(config)</code></pre>
+<p>Now you’ll make two sets of data from the example below. The first uses points and has columns id, latitude, and longitude. The second has polygons with columns id and WKT.</p>
+<pre><code>points_data = [
+    (1, 34.05, -118.25),  # Los Angeles
+    (2, 36.16, -115.15),  # Las Vegas
+    (3, 40.71, -74.00),   # New York
+    (4, 37.77, -122.41)   # San Francisco
+]
+
+
+polygons_data = [
+    (1, "POLYGON((-125 30, -125 40, -115 40, -115 30, -125 30))"),  # Covers part of California/Nevada
+    (2, "POLYGON((-80 35, -80 45, -70 45, -70 35, -80 35))")        # Covers part of New York area
+]</code></pre>
+<p>Define the schemas for the points data and polygons.</p>
+<pre><code>points_schema = StructType([
+    StructField("id", StringType(), True),
+    StructField("latitude", DoubleType(), True),
+    StructField("longitude", DoubleType(), True)
+])
+
+polygons_schema = StructType([
+    StructField("id", StringType(), True),
+    StructField("wkt", StringType(), True)
+])</code></pre>
+<p>Next, create DataFrames from the sample data.</p>
+<pre><code>points_df = spark.createDataFrame(points_data, schema=points_schema)
+polygons_df = spark.createDataFrame(polygons_data, schema=polygons_schema)</code></pre>
+<p>Convert points from the first data frame to Geometry objects.</p>
+<pre><code>points_df = points_df.withColumn("geometry", F.expr("ST_Point(CAST(longitude AS Decimal(24, 20)), CAST(latitude AS Decimal(24, 20)))"))</code></pre>
+<p>Convert the polygons from the second data frame to Geometry objects.</p>
+<pre><code>polygons_df = polygons_df.withColumn("geometry", F.expr("ST_GeomFromWKT(wkt)"))</code></pre>
+<p>Now we are going to switch from using Pyspark to using SparkSQL to take advantage of SQL’s simple join operation.</p>
+<p>Start by registering the DataFrames as temporary views for SQL operations.</p>
+<pre><code>points_df.createOrReplaceTempView("points")
+polygons_df.createOrReplaceTempView("polygons")</code></pre>
+<p>Perform geospatial join using ST_Intersects, which joins the rows between data frames based on if their geometries share any area at all.</p>
+<pre><code>result_df = spark.sql("""
+    SELECT p.id AS point_id, g.id AS polygon_id
+    FROM points p, polygons g
+    WHERE ST_Intersects(p.geometry, g.geometry)
+""")</code></pre>
+<p><code>ST_Intersects</code> is just one of many useful <a href="https://sedona.apache.org/latest-snapshot/api/sql/Function/">Apache Sedona spatial functions</a>.</p>
+<p>Thanks for reading this brief guide on getting started with spatial joins in Apache Sedona and Databricks.</p>
 
 
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="news,code,analysis" data-listing-date-sort="1733468400000" data-listing-file-modified-sort="1734351047253" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="520">
-<div class="thumbnail">
-<p><a href="./posts/spatial_joins/index.html" class="no-external"></a></p><a href="./posts/spatial_joins/index.html" class="no-external">
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-</a><p><a href="./posts/spatial_joins/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/spatial_joins/index.html" class="no-external">Geospatial Joins in Apache Sedona</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/spatial_joins/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('news'); return false;">
-news
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('code'); return false;">
-code
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('analysis'); return false;">
-analysis
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/spatial_joins/index.html" class="no-external">Pyspark combined with Apache Sedona is a very powerful tool that not enough data scientists and data engineers are using, especially when it comes to spatial data. This…</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/spatial_joins/index.html" class="no-external">
-<div class="listing-date">
-Dec 6, 2024
-</div>
-<div class="listing-author">
-Spencer Callister
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="news" data-listing-date-sort="1733036400000" data-listing-file-modified-sort="1734348112108" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="654">
-<div class="thumbnail">
-<p><a href="./posts/places_tutorial/index.html" class="no-external"></a></p><a href="./posts/places_tutorial/index.html" class="no-external">
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-</a><p><a href="./posts/places_tutorial/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/places_tutorial/index.html" class="no-external">Oh, the Places You’ll Go! - The Places API</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/places_tutorial/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('news'); return false;">
-news
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/places_tutorial/index.html" class="no-external">I’ve mentioned in some of my other posts that I am a big fan of Google Cloud. The APIs are amazing because they are expansive, easy to use, and fairly cost efficient. One of…</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/places_tutorial/index.html" class="no-external">
-<div class="listing-date">
-Dec 1, 2024
-</div>
-<div class="listing-author">
-Spencer Callister
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="news,code,analysis" data-listing-date-sort="1732086000000" data-listing-file-modified-sort="1734296195274" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1054">
-<div class="thumbnail">
-<p><a href="./posts/secrets_management/index.html" class="no-external"></a></p><a href="./posts/secrets_management/index.html" class="no-external">
-<p><img loading="lazy" src="./posts/secrets_management/image.png" class="thumbnail-image"></p>
-</a><p><a href="./posts/secrets_management/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/secrets_management/index.html" class="no-external">Use a Secret Manager!</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/secrets_management/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('news'); return false;">
-news
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('code'); return false;">
-code
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('analysis'); return false;">
-analysis
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/secrets_management/index.html" class="no-external">Secrets usually refer to credentials that you do not want to expose outside of yourself or your organization.</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/secrets_management/index.html" class="no-external">
-<div class="listing-date">
-Nov 20, 2024
-</div>
-<div class="listing-author">
-Spencer Callister
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/spatial_joins/index.html",
       "/posts/places_tutorial/index.html",
       "/posts/secrets_management/index.html"
     ]

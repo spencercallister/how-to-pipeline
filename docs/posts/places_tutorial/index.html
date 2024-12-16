@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Tristan O’Malley">
-<meta name="dcterms.date" content="2024-12-11">
+<meta name="author" content="Spencer Callister">
+<meta name="dcterms.date" content="2024-12-01">
 
-<title>Welcome To My Blog – how-to-pipeline</title>
+<title>Oh, the Places You’ll Go! - The Places API – how-to-pipeline</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -115,7 +115,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Welcome To My Blog</h1>
+      <h1 class="title">Oh, the Places You’ll Go! - The Places API</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">news</div>
               </div>
@@ -128,14 +128,14 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Author</div>
       <div class="quarto-title-meta-contents">
-               <p>Tristan O’Malley </p>
+               <p>Spencer Callister </p>
             </div>
     </div>
       
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">December 11, 2024</p>
+        <p class="date">December 1, 2024</p>
       </div>
     </div>
     
@@ -154,9 +154,73 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>This is the first post in a Quarto blog. Welcome!</p>
-<p><img src="thumbnail.jpg" class="img-fluid"></p>
-<p>Since this post doesn’t specify an explicit <code>image</code>, the first image in the post will be used in the listing page of posts.</p>
+<p>I’ve mentioned in some of my other posts that I am a big fan of Google Cloud. The APIs are amazing because they are expansive, easy to use, and fairly cost efficient. One of my favorite APIs is the Places API, which gives you access to pretty much everything in Google Maps, including addresses, business details, and reviews. This provides for a really neat data source that you can use to collect a ton of data for your ETL projects.</p>
+<p>Follow along to learn how to get a quickstart on using the Places API.</p>
+<p>Before you dive in, make sure you have done the following first: 1. <a href="https://developers.google.com/workspace/guides/create-project">Create a project</a> 2. <a href="https://cloud.google.com/billing/docs/how-to/modify-project#required-permissions-enable">Enable billing</a> 3. <a href="https://console.cloud.google.com/marketplace/product/google/places-backend.googleapis.com?q=search&amp;inv=1&amp;invt=AbkQaA">enable the Places API</a></p>
+<p>Once those steps are completed you can proceed to make a new directory and Python file for your program.</p>
+<p>One great use of the Places API is creating recommendation engines. For this tutorial, let’s pretend we are writing an application that recommends restaurants based on a user’s preferences on the type of food, where they live, price range, etc.</p>
+<p>We’ll keep this pretty simple by just focusing on getting some of the data that would be helpful for our awesome new app.</p>
+<p>To start, import the requests library from Python so you can make the request to the Places endpoint.</p>
+<pre><code>import requests</code></pre>
+<p>To access the API, you will need to authenticate by using an API key. To get your API key for the Place API, type “Google Maps Platform” in the Cloud Console search bar and click on the first option.</p>
+<p>Hover over the left nav-bar and click on APIs &amp; Services. Then scroll until you find “Places API (New)”, make sure it says “New”, and click on “Keys”.</p>
+<p>Select “Show Key” on the Maps Platform API Key and copy the key.</p>
+<p>I highly recommend storing your API key in a secret manager like Google Cloud’s rather than hard coding it into your program. To learn how to do this, read my previous blog post titled “<a href="https://spencercallister.github.io/how-to-pipeline/posts/secrets_management/">Use a Secrets Manager!</a>.”</p>
+<p>When you have the secret ready to go, you can proceed to making the API call.</p>
+<p>In my example, I am going to search for Sushi restaurants in Portland, Oregon.</p>
+<pre><code>
+key = secret["key"]
+
+url = "https://places.googleapis.com/v1/places:searchText"
+headers = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": key,
+    "X-Goog-FieldMask": "places.id,places.displayName,places.businessStatus,places.formattedAddress,places.currentOpeningHours,places.currentSecondaryOpeningHours,places.internationalPhoneNumber,places.nationalPhoneNumber,places.priceLevel,places.priceRange,places.rating,places.regularOpeningHours,places.regularSecondaryOpeningHours,places.userRatingCount,places.websiteUri"
+}
+data = {
+    "textQuery": "Popular Sushi in Portland"
+}
+
+response = requests.post(url, headers=headers, json=data)
+
+# Print the response
+print(response.status_code)
+
+response_data = response.json()
+places = response_data["places"]
+print(places)
+</code></pre>
+<p>The <code>places</code> variable should look something like the following when printed out:</p>
+<pre><code>[{'id': 'ChIJ3X-i8i8LlVQRTW4oCJHmg2M', 'nationalPhoneNumber': '(503) 380-7226'...}...]</code></pre>
+<p>Looking at really large objects isn’t ideal, so let’s put the data into a format that is more readable like a data frame.</p>
+<p>Since Polars is the future we will be using that.</p>
+<pre><code>import polars as pl</code></pre>
+<p>Now we can simply plug the places object into the <code>pl.DataFrame</code> method and display the data.</p>
+<pre><code>places_df = pl.DataFrame(places)
+places_df.limit(5)</code></pre>
+<p>Now that we have a lot of the details on the restaurants, we can sort through them based on what the user would like and recommend it back to them.</p>
+<p>Since the query is interested in a really popular Sushi place in Portland, I will look for the place with the most reviews.</p>
+<pre><code>rec = places_df\
+    .sort("userRatingCount", "rating", descending=[True, True])\
+    .limit(1)\
+    .to_dicts()[0]
+
+print(f"Based on your preferences, we highly recommend going to {rec['displayName']['text']}, which has an average rating of {rec['rating']} from {rec['userRatingCount']} reviews.")</code></pre>
+<p>Let’s say the user then wanted to get more details on the restaurant, like whether it has curbside pickup, live music, or alcoholic beverages, you could pass in the ID of the restaurant the user is curious about and get those details for them.</p>
+<pre><code>url = f"https://places.googleapis.com/v1/places/{places[0]["id"]}"
+headers = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": key,
+    "X-Goog-FieldMask": "allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,reviews,*servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout"
+}
+response = requests.get(url, headers=headers)
+
+# Print the response
+print(response.status_code)
+
+response_data = response.json()
+</code></pre>
+<p>The places API is full of potential for really great applications, and it is just one of many great APIs that Google has to offer. Thanks for following along and I hope you enjoyed learning about this really awesome tool.</p>
 
 
 

@@ -1,0 +1,197 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Oh, the Places You'll Go! - The Places API\"\n",
+        "author: \"Spencer Callister\"\n",
+        "date: \"2024-12-01\"\n",
+        "categories: [news]\n",
+        "---\n",
+        "\n",
+        "\n",
+        "I've mentioned in some of my other posts that I am a big fan of Google Cloud. The APIs are amazing because they are expansive, easy to use, and fairly cost efficient. One of my favorite APIs is the Places API, which gives you access to pretty much everything in Google Maps, including addresses, business details, and reviews. This provides for a really neat data source that you can use to collect a ton of data for your ETL projects.\n",
+        "\n",
+        "Follow along to learn how to get a quickstart on using the Places API.\n",
+        "\n",
+        "Before you dive in, make sure you have done the following first:\n",
+        "1. [Create a project](https://developers.google.com/workspace/guides/create-project)\n",
+        "2. [Enable billing](https://cloud.google.com/billing/docs/how-to/modify-project#required-permissions-enable) \n",
+        "3. [enable the Places API](https://console.cloud.google.com/marketplace/product/google/places-backend.googleapis.com?q=search&inv=1&invt=AbkQaA)\n",
+        "\n",
+        "Once those steps are completed you can proceed to make a new directory and Python file for your program.\n",
+        "\n",
+        "One great use of the Places API is creating recommendation engines. For this tutorial, let's pretend we are writing an application that recommends restaurants based on a user's preferences on the type of food, where they live, price range, etc.\n",
+        "\n",
+        "We'll keep this pretty simple by just focusing on getting some of the data that would be helpful for our awesome new app.\n",
+        "\n",
+        "To start, import the requests library from Python so you can make the request to the Places endpoint.\n"
+      ],
+      "id": "aacb3e58"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import requests"
+      ],
+      "id": "29e363a1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "To access the API, you will need to authenticate by using an API key. To get your API key for the Place API, type \"Google Maps Platform\" in the Cloud Console search bar and click on the first option.\n",
+        "\n",
+        "Hover over the left nav-bar and click on APIs & Services. Then scroll until you find \"Places API (New)\", make sure it says \"New\", and click on \"Keys\".\n",
+        "\n",
+        "Select \"Show Key\" on the Maps Platform API Key and copy the key.\n",
+        "\n",
+        "I highly recommend storing your API key in a secret manager like Google Cloud's rather than hard coding it into your program. To learn how to do this, read my previous blog post titled \"[Use a Secrets Manager!](https://spencercallister.github.io/how-to-pipeline/posts/secrets_management/).\"\n",
+        "\n",
+        "When you have the secret ready to go, you can proceed to making the API call.\n",
+        "\n",
+        "In my example, I am going to search for Sushi restaurants in Portland, Oregon.\n",
+        "\n",
+        "```\n",
+        "\n",
+        "key = secret[\"key\"]\n",
+        "\n",
+        "url = \"https://places.googleapis.com/v1/places:searchText\"\n",
+        "headers = {\n",
+        "    \"Content-Type\": \"application/json\",\n",
+        "    \"X-Goog-Api-Key\": key,\n",
+        "    \"X-Goog-FieldMask\": \"places.id,places.displayName,places.businessStatus,places.formattedAddress,places.currentOpeningHours,places.currentSecondaryOpeningHours,places.internationalPhoneNumber,places.nationalPhoneNumber,places.priceLevel,places.priceRange,places.rating,places.regularOpeningHours,places.regularSecondaryOpeningHours,places.userRatingCount,places.websiteUri\"\n",
+        "}\n",
+        "data = {\n",
+        "    \"textQuery\": \"Popular Sushi in Portland\"\n",
+        "}\n",
+        "\n",
+        "response = requests.post(url, headers=headers, json=data)\n",
+        "\n",
+        "# Print the response\n",
+        "print(response.status_code)\n",
+        "\n",
+        "response_data = response.json()\n",
+        "places = response_data[\"places\"]\n",
+        "print(places)\n",
+        "\n",
+        "```\n",
+        "\n",
+        "\n",
+        "The `places` variable should look something like the following when printed out:\n",
+        "```\n",
+        "[{'id': 'ChIJ3X-i8i8LlVQRTW4oCJHmg2M', 'nationalPhoneNumber': '(503) 380-7226'...}...]\n",
+        "```\n",
+        "\n",
+        "Looking at really large objects isn't ideal, so let's put the data into a format that is more readable like a data frame.\n",
+        "\n",
+        "Since Polars is the future we will be using that.\n"
+      ],
+      "id": "e62483f4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import polars as pl"
+      ],
+      "id": "8128b7d7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "places = pl.read_json(\"sample_data/places.json\").to_dicts()"
+      ],
+      "id": "a8b42e41",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Now we can simply plug the places object into the `pl.DataFrame` method and display the data.\n"
+      ],
+      "id": "e9236639"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "places_df = pl.DataFrame(places)\n",
+        "places_df.limit(5)"
+      ],
+      "id": "d4aa97ac",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Now that we have a lot of the details on the restaurants, we can sort through them based on what the user would like and recommend it back to them.\n",
+        "\n",
+        "Since the query is interested in a really popular Sushi place in Portland, I will look for the place with the most reviews.\n"
+      ],
+      "id": "bf4f189f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "rec = places_df\\\n",
+        "    .sort(\"userRatingCount\", \"rating\", descending=[True, True])\\\n",
+        "    .limit(1)\\\n",
+        "    .to_dicts()[0]\n",
+        "\n",
+        "print(f\"Based on your preferences, we highly recommend going to {rec['displayName']['text']}, which has an average rating of {rec['rating']} from {rec['userRatingCount']} reviews.\")"
+      ],
+      "id": "17eb7ac4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Let's say the user then wanted to get more details on the restaurant, like whether it has curbside pickup, live music, or alcoholic beverages, you could pass in the ID of the restaurant the user is curious about and get those details for them.\n",
+        "\n",
+        "```\n",
+        "url = f\"https://places.googleapis.com/v1/places/{places[0][\"id\"]}\"\n",
+        "headers = {\n",
+        "    \"Content-Type\": \"application/json\",\n",
+        "    \"X-Goog-Api-Key\": key,\n",
+        "    \"X-Goog-FieldMask\": \"allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,reviews,*servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout\"\n",
+        "}\n",
+        "response = requests.get(url, headers=headers)\n",
+        "\n",
+        "# Print the response\n",
+        "print(response.status_code)\n",
+        "\n",
+        "response_data = response.json()\n",
+        "\n",
+        "```\n",
+        "\n",
+        "The places API is full of potential for really great applications, and it is just one of many great APIs that Google has to offer. Thanks for following along and I hope you enjoyed learning about this really awesome tool."
+      ],
+      "id": "cfd48fd1"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

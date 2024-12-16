@@ -6,14 +6,25 @@ about:
   links:
     - icon: twitter
       text: Twitter
-      href: https://twitter.com
+      href: https://bsky.app/profile/spencitoburrito.bsky.social
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com
+      href: https://www.linkedin.com/in/spencercallister/
     - icon: github
       text: Github
-      href: https://github.com
+      href: https://github.com/spencercallister
 
 ---
 
-About this blog
+### Why do I write?
+
+My father (a very wise man) always told me people need at least two of three abilities:
+1. Writing
+2. Reading
+3. Problem solving
+
+As much as I love reading, I only like reading on subjects I really love, like history and political science. I've always had an ability to communicate better through writing than speaking because it forces me to take my time to think about what I really want to say. The world is in desparate need of highly technical people who can communicate to the ground level, the every day users of technology who's understanding is not forged in the flames of hours on Stack Overflow and Reddit, but through what can be quickly inferred.
+
+If I can increase the technical skill level for even one person who views this blog by a single new ability, then my effort has far paid off. Even if no one reads this blog, the skills I refine by effectively describing them in a way a high schooler can understand makes my personal growth the reward.
+
+More than this, engineering is not my greatest passion. My greatest passion is changing the world through discourse on the issues that it faces. This I believe, that my voice will change the world if I listen and speak.

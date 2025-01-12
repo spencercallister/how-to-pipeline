@@ -5,9 +5,11 @@ date: "2024-12-6"
 categories: [news, code, analysis]
 ---
 
-Pyspark combined with Apache Sedona is a very powerful tool that not enough data scientists and data engineers are using, especially when it comes to spatial data. This walkthrough will tell you the necessities for getting started in using spatial joins with Apache Sedona in Databricks.
+Pyspark combined with Apache Sedona is a very powerful tool that not enough data scientists and data engineers are using, especially when it comes to spatial data.
+This walkthrough will tell you the necessities for getting started in using spatial joins with Apache Sedona in Databricks.
 
-First, sign up for a [**Community** Edition Databricks account](https://docs.databricks.com/en/getting-started/community-edition.html)
+First, sign up for a [**Community** Edition Databricks account](https://docs.databricks.com/en/getting-started/community-edition.html).
+
 When you are logged in create a new notebook and start a cluster with a 12.2 LTS (Scala 2.12, Spark 3.3.2) runtime, then attach it to the notebook.
 
 Click on "Compute" on the left nav-bar and click on your cluster.
